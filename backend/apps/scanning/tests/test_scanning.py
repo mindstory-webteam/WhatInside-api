@@ -120,6 +120,30 @@ def _png(text="EXP 25/12/2026"):
     return SimpleUploadedFile("label.png", buf.getvalue(), content_type="image/png")
 
 
+def test_ocr_base64_json_server_side(api):
+    pytest.importorskip("pytesseract")
+    import base64
+    import shutil
+
+    if not shutil.which("tesseract"):
+        pytest.skip("tesseract binary not installed")
+    b64 = base64.b64encode(_png("EXP 25/12/2026").read()).decode()
+    r = api.post("/api/v1/scanning/ocr/", {"image_base64": f"data:image/png;base64,{b64}"}, format="json")
+    assert r.status_code == 200, r.data
+    assert r.data["ocr_source"] == "server"
+    assert "2026" in r.data["raw_text"]
+
+
+def test_ocr_base64_rejects_garbage_and_non_images(api):
+    bad = api.post("/api/v1/scanning/ocr/", {"image_base64": "not base64!!"}, format="json")
+    assert bad.status_code == 400
+    import base64
+
+    php = base64.b64encode(b"<?php echo 1; ?>").decode()
+    r = api.post("/api/v1/scanning/ocr/", {"image_base64": php}, format="json")
+    assert r.status_code == 400 and r.data["error"]["code"] == "invalid_image"
+
+
 def test_ocr_upload_rejects_non_images(api):
     fake = SimpleUploadedFile("x.png", b"<?php echo 'hi'; ?>", content_type="image/png")
     r = api.post("/api/v1/scanning/ocr/", {"image": fake}, format="multipart")
