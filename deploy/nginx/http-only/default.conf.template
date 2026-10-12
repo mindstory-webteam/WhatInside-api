@@ -1,0 +1,22 @@
+# TEMPORARY plain-HTTP config for testing on a bare IP before a domain + TLS exist.
+# Traffic (including passwords and tokens) is NOT encrypted. Switch to the HTTPS
+# config (deploy/nginx/templates) as soon as a domain points at the server.
+upstream whatinside_api { server api:8000; }
+
+server {
+    listen 80 default_server;
+    server_name _;
+
+    client_max_body_size 10m;
+
+    location /.well-known/acme-challenge/ { root /var/www/certbot; }
+    location /static/ { alias /var/www/static/; expires 7d; }
+
+    location / {
+        proxy_pass http://whatinside_api;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 60s;
+    }
+}

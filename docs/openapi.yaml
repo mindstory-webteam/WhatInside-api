@@ -1,0 +1,3879 @@
+openapi: 3.0.3
+info:
+  title: WhatInside API
+  version: 1.0.0
+  description: Household inventory, expiry tracking, scanning and reminders. Know
+    what's inside. Never waste again.
+paths:
+  /api/v1/analytics/overview/:
+    get:
+      operationId: v1_analytics_overview_retrieve
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      parameters:
+      - in: query
+        name: months
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/analytics/waste/:
+    get:
+      operationId: v1_analytics_waste_retrieve
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      parameters:
+      - in: query
+        name: months
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/auth/change-password/:
+    post:
+      operationId: v1_auth_change_password_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/login/:
+    post:
+      operationId: v1_auth_login_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailTokenObtainRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EmailTokenObtainRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EmailTokenObtainRequest'
+        required: true
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/logout/:
+    post:
+      operationId: v1_auth_logout_create
+      description: Blacklists the supplied refresh token so it can't mint new access
+        tokens.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '205':
+          description: No response body
+  /api/v1/auth/logout-all/:
+    post:
+      operationId: v1_auth_logout_all_create
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '205':
+          description: No response body
+  /api/v1/auth/me/:
+    get:
+      operationId: v1_auth_me_retrieve
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: v1_auth_me_partial_update
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: v1_auth_me_destroy
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/password-reset/:
+    post:
+      operationId: v1_auth_password_reset_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '202':
+          description: No response body
+  /api/v1/auth/password-reset/confirm/:
+    post:
+      operationId: v1_auth_password_reset_confirm_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/register/:
+    post:
+      operationId: v1_auth_register_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPairResponse'
+          description: ''
+  /api/v1/auth/token/refresh/:
+    post:
+      operationId: v1_auth_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/dashboard/expired/:
+    get:
+      operationId: v1_dashboard_expired_list
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBatchList'
+          description: ''
+  /api/v1/dashboard/expiring-soon/:
+    get:
+      operationId: v1_dashboard_expiring_soon_list
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      parameters:
+      - in: query
+        name: days
+        schema:
+          type: integer
+        description: Window in days (default 7, max 60)
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBatchList'
+          description: ''
+  /api/v1/dashboard/review-required/:
+    get:
+      operationId: v1_dashboard_review_required_list
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBatchList'
+          description: ''
+  /api/v1/dashboard/summary/:
+    get:
+      operationId: v1_dashboard_summary_retrieve
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/households/:
+    get:
+      operationId: v1_households_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHouseholdList'
+          description: ''
+    post:
+      operationId: v1_households_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HouseholdRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/HouseholdRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/HouseholdRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Household'
+          description: ''
+  /api/v1/households/{id}/:
+    get:
+      operationId: v1_households_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Household'
+          description: ''
+    patch:
+      operationId: v1_households_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedHouseholdRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedHouseholdRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedHouseholdRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Household'
+          description: ''
+    delete:
+      operationId: v1_households_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/households/{id}/invitations/:
+    get:
+      operationId: v1_households_invitations_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitation'
+          description: ''
+    post:
+      operationId: v1_households_invitations_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvitationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvitationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvitationRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitation'
+          description: ''
+  /api/v1/households/{id}/invitations/{invitation_id}/:
+    delete:
+      operationId: v1_households_invitations_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      - in: path
+        name: invitation_id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/households/{id}/leave/:
+    post:
+      operationId: v1_households_leave_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/households/{id}/members/:
+    get:
+      operationId: v1_households_members_list
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMemberList'
+          description: ''
+  /api/v1/households/{id}/members/{member_id}/:
+    patch:
+      operationId: v1_households_members_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      - in: path
+        name: member_id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMemberRoleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMemberRoleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMemberRoleRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+          description: ''
+    delete:
+      operationId: v1_households_members_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      - in: path
+        name: member_id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/households/{id}/members/{member_id}/make-owner/:
+    post:
+      operationId: v1_households_members_make_owner_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      - in: path
+        name: member_id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Household'
+          description: ''
+  /api/v1/households/join/:
+    post:
+      operationId: v1_households_join_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JoinRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/JoinRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/JoinRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Household'
+          description: ''
+  /api/v1/inventory/:
+    get:
+      operationId: v1_inventory_list
+      description: Inventory batches. Lists default to ``status=active`` unless ``status``
+        is given.
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - bakery
+            - beverages
+            - condiments
+            - dairy
+            - frozen
+            - grains
+            - household
+            - meat_seafood
+            - medicine
+            - other
+            - personal_care
+            - produce
+            - snacks
+        description: |-
+          * `dairy` - Dairy
+          * `meat_seafood` - Meat & Seafood
+          * `produce` - Fruits & Vegetables
+          * `bakery` - Bakery
+          * `beverages` - Beverages
+          * `frozen` - Frozen
+          * `grains` - Grains & Pulses
+          * `snacks` - Snacks
+          * `condiments` - Sauces & Spices
+          * `household` - Household Supplies
+          * `personal_care` - Personal Care
+          * `medicine` - Medicine
+          * `other` - Other
+        explode: true
+        style: form
+      - in: query
+        name: expiry_from
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: expiry_status
+        schema:
+          type: string
+          enum:
+          - expired
+          - expiring_soon
+          - fresh
+          - unknown
+        description: |-
+          * `fresh` - Fresh
+          * `expiring_soon` - Expiring soon
+          * `expired` - Expired
+          * `unknown` - Date needs review
+      - in: query
+        name: expiry_to
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: needs_review
+        schema:
+          type: boolean
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: product_name, -product_name, effective_expiry, -created_at
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: product
+        schema:
+          type: number
+      - in: query
+        name: search
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - active
+            - discarded
+            - finished
+        description: |-
+          * `active` - Active
+          * `finished` - Finished
+          * `discarded` - Discarded
+        explode: true
+        style: form
+      - in: query
+        name: storage_location
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - freezer
+            - other
+            - pantry
+            - refrigerator
+        description: |-
+          * `refrigerator` - Refrigerator
+          * `freezer` - Freezer
+          * `pantry` - Pantry
+          * `other` - Other
+        explode: true
+        style: form
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBatchList'
+          description: ''
+    post:
+      operationId: v1_inventory_create
+      description: Inventory batches. Lists default to ``status=active`` unless ``status``
+        is given.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BatchCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BatchCreateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+          description: ''
+  /api/v1/inventory/{id}/:
+    get:
+      operationId: v1_inventory_retrieve
+      description: Inventory batches. Lists default to ``status=active`` unless ``status``
+        is given.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+          description: ''
+    patch:
+      operationId: v1_inventory_partial_update
+      description: Inventory batches. Lists default to ``status=active`` unless ``status``
+        is given.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBatchUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBatchUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBatchUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+          description: ''
+    delete:
+      operationId: v1_inventory_destroy
+      description: Inventory batches. Lists default to ``status=active`` unless ``status``
+        is given.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/inventory/{id}/consume/:
+    post:
+      operationId: v1_inventory_consume_create
+      description: Inventory batches. Lists default to ``status=active`` unless ``status``
+        is given.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuantityActionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuantityActionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuantityActionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+          description: ''
+  /api/v1/inventory/{id}/discard/:
+    post:
+      operationId: v1_inventory_discard_create
+      description: Inventory batches. Lists default to ``status=active`` unless ``status``
+        is given.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiscardRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DiscardRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DiscardRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+          description: ''
+  /api/v1/inventory/{id}/finish/:
+    post:
+      operationId: v1_inventory_finish_create
+      description: Inventory batches. Lists default to ``status=active`` unless ``status``
+        is given.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VersionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VersionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VersionRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+          description: ''
+  /api/v1/inventory/{id}/history/:
+    get:
+      operationId: v1_inventory_history_list
+      description: Inventory batches. Lists default to ``status=active`` unless ``status``
+        is given.
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - bakery
+            - beverages
+            - condiments
+            - dairy
+            - frozen
+            - grains
+            - household
+            - meat_seafood
+            - medicine
+            - other
+            - personal_care
+            - produce
+            - snacks
+        description: |-
+          * `dairy` - Dairy
+          * `meat_seafood` - Meat & Seafood
+          * `produce` - Fruits & Vegetables
+          * `bakery` - Bakery
+          * `beverages` - Beverages
+          * `frozen` - Frozen
+          * `grains` - Grains & Pulses
+          * `snacks` - Snacks
+          * `condiments` - Sauces & Spices
+          * `household` - Household Supplies
+          * `personal_care` - Personal Care
+          * `medicine` - Medicine
+          * `other` - Other
+        explode: true
+        style: form
+      - in: query
+        name: expiry_from
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: expiry_status
+        schema:
+          type: string
+          enum:
+          - expired
+          - expiring_soon
+          - fresh
+          - unknown
+        description: |-
+          * `fresh` - Fresh
+          * `expiring_soon` - Expiring soon
+          * `expired` - Expired
+          * `unknown` - Date needs review
+      - in: query
+        name: expiry_to
+        schema:
+          type: string
+          format: date
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      - in: query
+        name: needs_review
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: product
+        schema:
+          type: number
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - active
+            - discarded
+            - finished
+        description: |-
+          * `active` - Active
+          * `finished` - Finished
+          * `discarded` - Discarded
+        explode: true
+        style: form
+      - in: query
+        name: storage_location
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - freezer
+            - other
+            - pantry
+            - refrigerator
+        description: |-
+          * `refrigerator` - Refrigerator
+          * `freezer` - Freezer
+          * `pantry` - Pantry
+          * `other` - Other
+        explode: true
+        style: form
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInventoryEventList'
+          description: ''
+  /api/v1/inventory/{id}/restock/:
+    post:
+      operationId: v1_inventory_restock_create
+      description: Inventory batches. Lists default to ``status=active`` unless ``status``
+        is given.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuantityActionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/QuantityActionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/QuantityActionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+          description: ''
+  /api/v1/inventory/activity/:
+    get:
+      operationId: v1_inventory_activity_list
+      description: Recent household activity (dashboard feed).
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - bakery
+            - beverages
+            - condiments
+            - dairy
+            - frozen
+            - grains
+            - household
+            - meat_seafood
+            - medicine
+            - other
+            - personal_care
+            - produce
+            - snacks
+        description: |-
+          * `dairy` - Dairy
+          * `meat_seafood` - Meat & Seafood
+          * `produce` - Fruits & Vegetables
+          * `bakery` - Bakery
+          * `beverages` - Beverages
+          * `frozen` - Frozen
+          * `grains` - Grains & Pulses
+          * `snacks` - Snacks
+          * `condiments` - Sauces & Spices
+          * `household` - Household Supplies
+          * `personal_care` - Personal Care
+          * `medicine` - Medicine
+          * `other` - Other
+        explode: true
+        style: form
+      - in: query
+        name: expiry_from
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: expiry_status
+        schema:
+          type: string
+          enum:
+          - expired
+          - expiring_soon
+          - fresh
+          - unknown
+        description: |-
+          * `fresh` - Fresh
+          * `expiring_soon` - Expiring soon
+          * `expired` - Expired
+          * `unknown` - Date needs review
+      - in: query
+        name: expiry_to
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: needs_review
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: product
+        schema:
+          type: number
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - active
+            - discarded
+            - finished
+        description: |-
+          * `active` - Active
+          * `finished` - Finished
+          * `discarded` - Discarded
+        explode: true
+        style: form
+      - in: query
+        name: storage_location
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - freezer
+            - other
+            - pantry
+            - refrigerator
+        description: |-
+          * `refrigerator` - Refrigerator
+          * `freezer` - Freezer
+          * `pantry` - Pantry
+          * `other` - Other
+        explode: true
+        style: form
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedInventoryEventList'
+          description: ''
+  /api/v1/notifications/:
+    get:
+      operationId: v1_notifications_list
+      description: The caller's reminder history. ``?upcoming=true`` lists scheduled
+        ones instead.
+      parameters:
+      - in: query
+        name: household
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+          - cancelled
+          - failed
+          - local_only
+          - pending
+          - sent
+          - skipped
+        description: |-
+          * `pending` - Pending
+          * `sent` - Sent (push)
+          * `local_only` - Device reminder only
+          * `failed` - Failed
+          * `cancelled` - Cancelled
+          * `skipped` - Skipped
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificationRecordList'
+          description: ''
+  /api/v1/notifications/devices/:
+    get:
+      operationId: v1_notifications_devices_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDeviceTokenList'
+          description: ''
+  /api/v1/notifications/devices/{id}/:
+    delete:
+      operationId: v1_notifications_devices_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this device token.
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/notifications/mark-all-read/:
+    post:
+      operationId: v1_notifications_mark_all_read_create
+      description: The caller's reminder history. ``?upcoming=true`` lists scheduled
+        ones instead.
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/notifications/preferences/:
+    get:
+      operationId: v1_notifications_preferences_retrieve
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreference'
+          description: ''
+    patch:
+      operationId: v1_notifications_preferences_partial_update
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationPreferenceRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationPreferenceRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificationPreferenceRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreference'
+          description: ''
+  /api/v1/notifications/register-device/:
+    post:
+      operationId: v1_notifications_register_device_create
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceTokenRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceTokenRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceTokenRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceToken'
+          description: ''
+  /api/v1/products/:
+    get:
+      operationId: v1_products_list
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      parameters:
+      - in: query
+        name: barcode
+        schema:
+          type: string
+      - in: query
+        name: category
+        schema:
+          type: string
+          enum:
+          - bakery
+          - beverages
+          - condiments
+          - dairy
+          - frozen
+          - grains
+          - household
+          - meat_seafood
+          - medicine
+          - other
+          - personal_care
+          - produce
+          - snacks
+        description: |-
+          * `dairy` - Dairy
+          * `meat_seafood` - Meat & Seafood
+          * `produce` - Fruits & Vegetables
+          * `bakery` - Bakery
+          * `beverages` - Beverages
+          * `frozen` - Frozen
+          * `grains` - Grains & Pulses
+          * `snacks` - Snacks
+          * `condiments` - Sauces & Spices
+          * `household` - Household Supplies
+          * `personal_care` - Personal Care
+          * `medicine` - Medicine
+          * `other` - Other
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProductList'
+          description: ''
+    post:
+      operationId: v1_products_create
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+  /api/v1/products/{id}/:
+    get:
+      operationId: v1_products_retrieve
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    patch:
+      operationId: v1_products_partial_update
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProductRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProductRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProductRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    delete:
+      operationId: v1_products_destroy
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/products/search/:
+    get:
+      operationId: v1_products_search_list
+      description: Fast lookup used by add-product and shopping list ("already in
+        inventory?").
+      parameters:
+      - in: query
+        name: barcode
+        schema:
+          type: string
+      - in: query
+        name: category
+        schema:
+          type: string
+          enum:
+          - bakery
+          - beverages
+          - condiments
+          - dairy
+          - frozen
+          - grains
+          - household
+          - meat_seafood
+          - medicine
+          - other
+          - personal_care
+          - produce
+          - snacks
+        description: |-
+          * `dairy` - Dairy
+          * `meat_seafood` - Meat & Seafood
+          * `produce` - Fruits & Vegetables
+          * `bakery` - Bakery
+          * `beverages` - Beverages
+          * `frozen` - Frozen
+          * `grains` - Grains & Pulses
+          * `snacks` - Snacks
+          * `condiments` - Sauces & Spices
+          * `household` - Household Supplies
+          * `personal_care` - Personal Care
+          * `medicine` - Medicine
+          * `other` - Other
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: Name, brand or barcode
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProductList'
+          description: ''
+  /api/v1/scanning/barcode/:
+    post:
+      operationId: v1_scanning_barcode_create
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BarcodeRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BarcodeRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BarcodeRequestRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/scanning/confirm/:
+    post:
+      operationId: v1_scanning_confirm_create
+      description: Create a batch from reviewed scan fields (the only way a scan becomes
+        inventory).
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmScanRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConfirmScanRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConfirmScanRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+          description: ''
+  /api/v1/scanning/ocr/:
+    post:
+      operationId: v1_scanning_ocr_create
+      description: |-
+        Normalise label text into reviewable fields. Never saves anything.
+
+        Send a photo (multipart, server OCR) or text recognised on-device. Client-side
+        parsing is not trusted: the server always re-derives the structured fields.
+      tags:
+      - v1
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OcrRequestRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OcrRequestRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/shopping-list/:
+    get:
+      operationId: v1_shopping_list_list
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      parameters:
+      - in: query
+        name: is_purchased
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedShoppingListItemList'
+          description: ''
+    post:
+      operationId: v1_shopping_list_create
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShoppingListItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ShoppingListItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ShoppingListItemRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListItem'
+          description: ''
+  /api/v1/shopping-list/{id}/:
+    get:
+      operationId: v1_shopping_list_retrieve
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListItem'
+          description: ''
+    patch:
+      operationId: v1_shopping_list_partial_update
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedShoppingListItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedShoppingListItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedShoppingListItemRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListItem'
+          description: ''
+    delete:
+      operationId: v1_shopping_list_destroy
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/shopping-list/{id}/add-to-inventory/:
+    post:
+      operationId: v1_shopping_list_add_to_inventory_create
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddToInventoryRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AddToInventoryRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AddToInventoryRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+          description: ''
+  /api/v1/shopping-list/{id}/mark-purchased/:
+    post:
+      operationId: v1_shopping_list_mark_purchased_create
+      description: 'Idempotent: marking an already-purchased item again is a no-op.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListItem'
+          description: ''
+  /api/v1/shopping-list/{id}/mark-unpurchased/:
+    post:
+      operationId: v1_shopping_list_mark_unpurchased_create
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          pattern: ^\d+$
+        required: true
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShoppingListItem'
+          description: ''
+  /api/v1/shopping-list/clear-purchased/:
+    post:
+      operationId: v1_shopping_list_clear_purchased_create
+      description: 'Use in viewsets: provides ``self.household`` / ``self.membership``
+        and household filtering.'
+      tags:
+      - v1
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    AddToInventoryRequest:
+      type: object
+      description: Converting a purchase into inventory requires an explicit decision
+        about the expiry date.
+      properties:
+        storage_location:
+          allOf:
+          - $ref: '#/components/schemas/StorageLocationEnum'
+          default: refrigerator
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,7}(?:\.\d{0,3})?$
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+        best_before_date:
+          type: string
+          format: date
+          nullable: true
+        expiry_unknown:
+          type: boolean
+          default: false
+          description: Set true to save without a date; the batch is flagged.
+        purchase_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+    BarcodeRequestRequest:
+      type: object
+      properties:
+        barcode:
+          type: string
+          minLength: 1
+          maxLength: 14
+      required:
+      - barcode
+    Batch:
+      type: object
+      description: Read representation. ``expiry_status`` is computed with the household's
+        local date.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          allOf:
+          - $ref: '#/components/schemas/ProductSummary'
+          readOnly: true
+        storage_location:
+          allOf:
+          - $ref: '#/components/schemas/StorageLocationEnum'
+          readOnly: true
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,7}(?:\.\d{0,3})?$
+          readOnly: true
+        initial_quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,7}(?:\.\d{0,3})?$
+          readOnly: true
+        unit:
+          allOf:
+          - $ref: '#/components/schemas/UnitEnum'
+          readOnly: true
+        purchase_date:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+        manufacturing_date:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+        expiry_date:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+          description: Expiry / use-by date (date-only, no timezone).
+        best_before_date:
+          type: string
+          format: date
+          readOnly: true
+          nullable: true
+        effective_expiry:
+          type: string
+          format: date
+          readOnly: true
+        expiry_confirmed:
+          type: boolean
+          readOnly: true
+          description: True only after a person has reviewed/entered the date.
+        batch_number:
+          type: string
+          readOnly: true
+        purchase_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+          description: Total price paid for this batch.
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,4})?$
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/BatchStatusEnum'
+          readOnly: true
+        notes:
+          type: string
+          readOnly: true
+        version:
+          type: integer
+          readOnly: true
+          description: Optimistic concurrency token.
+        expiry_status:
+          type: string
+          readOnly: true
+        days_until_expiry:
+          type: integer
+          nullable: true
+          readOnly: true
+        needs_review:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - batch_number
+      - best_before_date
+      - created_at
+      - days_until_expiry
+      - effective_expiry
+      - expiry_confirmed
+      - expiry_date
+      - expiry_status
+      - id
+      - initial_quantity
+      - manufacturing_date
+      - needs_review
+      - notes
+      - product
+      - purchase_date
+      - purchase_price
+      - quantity
+      - status
+      - storage_location
+      - unit
+      - unit_price
+      - updated_at
+      - version
+    BatchCreateRequest:
+      type: object
+      properties:
+        product:
+          type: integer
+          description: Existing product id
+        new_product:
+          allOf:
+          - $ref: '#/components/schemas/NewProductRequest'
+          description: Create or reuse a product by barcode/name
+        storage_location:
+          allOf:
+          - $ref: '#/components/schemas/StorageLocationEnum'
+          default: refrigerator
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,7}(?:\.\d{0,3})?$
+        unit:
+          $ref: '#/components/schemas/UnitEnum'
+        purchase_date:
+          type: string
+          format: date
+          nullable: true
+        manufacturing_date:
+          type: string
+          format: date
+          nullable: true
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+        best_before_date:
+          type: string
+          format: date
+          nullable: true
+        expiry_confirmed:
+          type: boolean
+          default: false
+          description: Send true only after the user reviewed the date. Unconfirmed
+            dates are flagged.
+        batch_number:
+          type: string
+          default: ''
+          maxLength: 64
+        purchase_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        notes:
+          type: string
+          default: ''
+          maxLength: 500
+      required:
+      - quantity
+    BatchStatusEnum:
+      enum:
+      - active
+      - finished
+      - discarded
+      type: string
+      description: |-
+        * `active` - Active
+        * `finished` - Finished
+        * `discarded` - Discarded
+    CategoryEnum:
+      enum:
+      - dairy
+      - meat_seafood
+      - produce
+      - bakery
+      - beverages
+      - frozen
+      - grains
+      - snacks
+      - condiments
+      - household
+      - personal_care
+      - medicine
+      - other
+      type: string
+      description: |-
+        * `dairy` - Dairy
+        * `meat_seafood` - Meat & Seafood
+        * `produce` - Fruits & Vegetables
+        * `bakery` - Bakery
+        * `beverages` - Beverages
+        * `frozen` - Frozen
+        * `grains` - Grains & Pulses
+        * `snacks` - Snacks
+        * `condiments` - Sauces & Spices
+        * `household` - Household Supplies
+        * `personal_care` - Personal Care
+        * `medicine` - Medicine
+        * `other` - Other
+    ChangePasswordRequest:
+      type: object
+      properties:
+        current_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - current_password
+      - new_password
+    ConfirmScanRequest:
+      type: object
+      description: Saves a reviewed scan. ``confirmed`` must be true — nothing is
+        saved from an unreviewed scan.
+      properties:
+        product:
+          type: integer
+          description: Existing product id
+        new_product:
+          allOf:
+          - $ref: '#/components/schemas/NewProductRequest'
+          description: Create or reuse a product by barcode/name
+        storage_location:
+          allOf:
+          - $ref: '#/components/schemas/StorageLocationEnum'
+          default: refrigerator
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,7}(?:\.\d{0,3})?$
+        unit:
+          $ref: '#/components/schemas/UnitEnum'
+        purchase_date:
+          type: string
+          format: date
+          nullable: true
+        manufacturing_date:
+          type: string
+          format: date
+          nullable: true
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+        best_before_date:
+          type: string
+          format: date
+          nullable: true
+        expiry_confirmed:
+          type: boolean
+        batch_number:
+          type: string
+          default: ''
+          maxLength: 64
+        purchase_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        notes:
+          type: string
+          default: ''
+          maxLength: 500
+        confirmed:
+          type: boolean
+        source:
+          allOf:
+          - $ref: '#/components/schemas/SourceEnum'
+          default: manual
+      required:
+      - confirmed
+      - quantity
+    DateFormatEnum:
+      enum:
+      - DD/MM/YYYY
+      - MM/DD/YYYY
+      - YYYY-MM-DD
+      type: string
+      description: |-
+        * `DD/MM/YYYY` - DD/MM/YYYY
+        * `MM/DD/YYYY` - MM/DD/YYYY
+        * `YYYY-MM-DD` - YYYY-MM-DD
+    DateOrderEnum:
+      enum:
+      - dmy
+      - mdy
+      type: string
+      description: |-
+        * `dmy` - dmy
+        * `mdy` - mdy
+    DaysBeforeExpiryEnum:
+      enum:
+      - 7
+      - 3
+      - 1
+      - 0
+      type: integer
+      description: |-
+        * `7` - 7
+        * `3` - 3
+        * `1` - 1
+        * `0` - 0
+    DeliveryMethodsEnum:
+      enum:
+      - local
+      - push
+      type: string
+      description: |-
+        * `local` - local
+        * `push` - push
+    DeviceToken:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        token:
+          type: string
+          maxLength: 255
+          pattern: ^(ExponentPushToken|ExpoPushToken)\[[A-Za-z0-9_\-]+\]$
+        platform:
+          $ref: '#/components/schemas/PlatformEnum'
+        device_name:
+          type: string
+          maxLength: 120
+        is_active:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        last_seen_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - is_active
+      - last_seen_at
+      - platform
+      - token
+    DeviceTokenRequest:
+      type: object
+      properties:
+        token:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: ^(ExponentPushToken|ExpoPushToken)\[[A-Za-z0-9_\-]+\]$
+        platform:
+          $ref: '#/components/schemas/PlatformEnum'
+        device_name:
+          type: string
+          maxLength: 120
+      required:
+      - platform
+      - token
+    DiscardRequest:
+      type: object
+      properties:
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,7}(?:\.\d{0,3})?$
+          description: Omit to discard everything left.
+        reason:
+          allOf:
+          - $ref: '#/components/schemas/ReasonEnum'
+          default: other
+        note:
+          type: string
+          default: ''
+          maxLength: 500
+        version:
+          type: integer
+    EmailTokenObtainRequest:
+      type: object
+      description: Login with email + password; returns access, refresh and the user
+        profile.
+      properties:
+        email:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    EventTypeEnum:
+      enum:
+      - added
+      - consumed
+      - discarded
+      - restocked
+      - adjusted
+      - finished
+      - deleted
+      type: string
+      description: |-
+        * `added` - Added
+        * `consumed` - Consumed
+        * `discarded` - Discarded
+        * `restocked` - Restocked
+        * `adjusted` - Adjusted
+        * `finished` - Finished
+        * `deleted` - Deleted
+    Household:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        owner:
+          type: integer
+          readOnly: true
+        timezone:
+          type: string
+          maxLength: 64
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        my_role:
+          type: string
+          nullable: true
+          readOnly: true
+        member_count:
+          type: integer
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - member_count
+      - my_role
+      - name
+      - owner
+    HouseholdRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        timezone:
+          type: string
+          minLength: 1
+          maxLength: 64
+      required:
+      - name
+    InventoryEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        batch:
+          type: integer
+          readOnly: true
+          nullable: true
+        product:
+          type: integer
+          readOnly: true
+          nullable: true
+        product_name:
+          type: string
+          readOnly: true
+        event_type:
+          allOf:
+          - $ref: '#/components/schemas/EventTypeEnum'
+          readOnly: true
+        quantity_change:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,7}(?:\.\d{0,3})?$
+          readOnly: true
+        unit:
+          allOf:
+          - $ref: '#/components/schemas/UnitEnum'
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        note:
+          type: string
+          readOnly: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+          nullable: true
+          description: Estimated value of the quantity changed (from the batch's purchase
+            price).
+        before_expiry:
+          type: boolean
+          readOnly: true
+          nullable: true
+          description: Whether the change happened on/before the expiry date.
+        actor:
+          type: integer
+          readOnly: true
+          nullable: true
+        actor_name:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - actor
+      - actor_name
+      - batch
+      - before_expiry
+      - created_at
+      - event_type
+      - id
+      - note
+      - price
+      - product
+      - product_name
+      - quantity_change
+      - reason
+      - unit
+    Invitation:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        role:
+          $ref: '#/components/schemas/InvitationRoleEnum'
+        code:
+          type: string
+          readOnly: true
+        expires_at:
+          type: string
+          format: date-time
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        accepted_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        revoked:
+          type: boolean
+          readOnly: true
+      required:
+      - accepted_at
+      - code
+      - created_at
+      - expires_at
+      - id
+      - revoked
+    InvitationRequest:
+      type: object
+      properties:
+        email:
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        role:
+          $ref: '#/components/schemas/InvitationRoleEnum'
+    InvitationRoleEnum:
+      enum:
+      - admin
+      - member
+      type: string
+      description: |-
+        * `admin` - Administrator
+        * `member` - Member
+    JoinRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 32
+      required:
+      - code
+    LogoutRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    Member:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        role:
+          $ref: '#/components/schemas/MemberRoleEnum'
+        status:
+          allOf:
+          - $ref: '#/components/schemas/MemberStatusEnum'
+          readOnly: true
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - email
+      - id
+      - joined_at
+      - name
+      - status
+      - user
+    MemberRoleEnum:
+      enum:
+      - owner
+      - admin
+      - member
+      type: string
+      description: |-
+        * `owner` - Owner
+        * `admin` - Administrator
+        * `member` - Member
+    MemberRoleRoleEnum:
+      enum:
+      - admin
+      - member
+      type: string
+      description: |-
+        * `admin` - admin
+        * `member` - member
+    MemberStatusEnum:
+      enum:
+      - active
+      - removed
+      - left
+      type: string
+      description: |-
+        * `active` - Active
+        * `removed` - Removed
+        * `left` - Left
+    NewProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        brand:
+          type: string
+          default: ''
+          maxLength: 120
+        barcode:
+          oneOf:
+          - type: string
+            default: ''
+            pattern: ^\d{6,14}$
+          - type: string
+            maxLength: 0
+        category:
+          allOf:
+          - $ref: '#/components/schemas/CategoryEnum'
+          default: other
+        default_unit:
+          allOf:
+          - $ref: '#/components/schemas/UnitEnum'
+          default: pcs
+        image_url:
+          oneOf:
+          - type: string
+            format: uri
+            default: ''
+          - type: string
+            maxLength: 0
+      required:
+      - name
+    NotificationPreference:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        days_before_expiry:
+          type: array
+          items:
+            $ref: '#/components/schemas/DaysBeforeExpiryEnum'
+          description: Any of 7, 3, 1, 0 (0 = on the expiry date)
+        delivery_methods:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeliveryMethodsEnum'
+        reminder_hour:
+          type: integer
+          maximum: 23
+          minimum: 0
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - days_before_expiry
+      - delivery_methods
+      - reminder_hour
+      - updated_at
+    NotificationRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        household:
+          type: integer
+          readOnly: true
+        batch:
+          type: integer
+          readOnly: true
+          nullable: true
+        notification_type:
+          type: string
+          readOnly: true
+        days_before:
+          type: integer
+          readOnly: true
+        expiry_date:
+          type: string
+          format: date
+          readOnly: true
+        scheduled_for:
+          type: string
+          format: date-time
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/NotificationRecordStatusEnum'
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        body:
+          type: string
+          readOnly: true
+        sent_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        read_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - batch
+      - body
+      - created_at
+      - days_before
+      - expiry_date
+      - household
+      - id
+      - notification_type
+      - read_at
+      - scheduled_for
+      - sent_at
+      - status
+      - title
+    NotificationRecordStatusEnum:
+      enum:
+      - pending
+      - sent
+      - local_only
+      - failed
+      - cancelled
+      - skipped
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `sent` - Sent (push)
+        * `local_only` - Device reminder only
+        * `failed` - Failed
+        * `cancelled` - Cancelled
+        * `skipped` - Skipped
+    OcrRequestRequest:
+      type: object
+      properties:
+        image:
+          type: string
+          format: binary
+          description: JPEG/PNG/WebP label photo (server-side OCR)
+        raw_text:
+          type: string
+          minLength: 1
+          description: Text recognised on-device (ML Kit). Re-normalised on the server.
+          maxLength: 20000
+        date_order:
+          allOf:
+          - $ref: '#/components/schemas/DateOrderEnum'
+          description: |-
+            Preferred numeric date order; defaults from the user's settings.
+
+            * `dmy` - dmy
+            * `mdy` - mdy
+    PaginatedBatchList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Batch'
+    PaginatedDeviceTokenList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceToken'
+    PaginatedHouseholdList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Household'
+    PaginatedInventoryEventList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/InventoryEvent'
+    PaginatedMemberList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Member'
+    PaginatedNotificationRecordList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationRecord'
+    PaginatedProductList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+    PaginatedShoppingListItemList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShoppingListItem'
+    PasswordResetConfirmRequest:
+      type: object
+      properties:
+        uid:
+          type: string
+          minLength: 1
+        token:
+          type: string
+          minLength: 1
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - new_password
+      - token
+      - uid
+    PasswordResetRequestRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+      required:
+      - email
+    PatchedBatchUpdateRequest:
+      type: object
+      properties:
+        product:
+          type: integer
+        storage_location:
+          $ref: '#/components/schemas/StorageLocationEnum'
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,7}(?:\.\d{0,3})?$
+        unit:
+          $ref: '#/components/schemas/UnitEnum'
+        purchase_date:
+          type: string
+          format: date
+          nullable: true
+        manufacturing_date:
+          type: string
+          format: date
+          nullable: true
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+        best_before_date:
+          type: string
+          format: date
+          nullable: true
+        expiry_confirmed:
+          type: boolean
+        batch_number:
+          type: string
+          maxLength: 64
+        purchase_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
+        notes:
+          type: string
+          maxLength: 500
+        version:
+          type: integer
+          description: Last version seen; mismatches return 409.
+    PatchedHouseholdRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        timezone:
+          type: string
+          minLength: 1
+          maxLength: 64
+    PatchedMemberRoleRequest:
+      type: object
+      properties:
+        role:
+          $ref: '#/components/schemas/MemberRoleRoleEnum'
+    PatchedNotificationPreferenceRequest:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        days_before_expiry:
+          type: array
+          items:
+            $ref: '#/components/schemas/DaysBeforeExpiryEnum'
+          description: Any of 7, 3, 1, 0 (0 = on the expiry date)
+        delivery_methods:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeliveryMethodsEnum'
+        reminder_hour:
+          type: integer
+          maximum: 23
+          minimum: 0
+    PatchedProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        brand:
+          type: string
+          maxLength: 120
+        barcode:
+          type: string
+          maxLength: 32
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        default_unit:
+          $ref: '#/components/schemas/UnitEnum'
+        image:
+          type: string
+          format: binary
+          nullable: true
+        image_url:
+          description: External image from the barcode provider, if any.
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+    PatchedShoppingListItemRequest:
+      type: object
+      properties:
+        product_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        product:
+          type: integer
+          nullable: true
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,7}(?:\.\d{0,3})?$
+        unit:
+          $ref: '#/components/schemas/UnitEnum'
+        note:
+          type: string
+          maxLength: 300
+    PatchedUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        preferred_language:
+          $ref: '#/components/schemas/PreferredLanguageEnum'
+        timezone:
+          type: string
+          minLength: 1
+          maxLength: 64
+        date_format:
+          $ref: '#/components/schemas/DateFormatEnum'
+        unit_system:
+          $ref: '#/components/schemas/UnitSystemEnum'
+    PlatformEnum:
+      enum:
+      - ios
+      - android
+      - web
+      type: string
+      description: |-
+        * `ios` - iOS
+        * `android` - Android
+        * `web` - Web
+    PreferredLanguageEnum:
+      enum:
+      - en
+      - ml
+      type: string
+      description: |-
+        * `en` - English
+        * `ml` - Malayalam
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        household:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        brand:
+          type: string
+          maxLength: 120
+        barcode:
+          type: string
+          maxLength: 32
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        default_unit:
+          $ref: '#/components/schemas/UnitEnum'
+        image:
+          type: string
+          format: uri
+          nullable: true
+        image_url:
+          description: External image from the barcode provider, if any.
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+        active_quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,9}(?:\.\d{0,3})?$
+          readOnly: true
+        active_batch_count:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - active_batch_count
+      - active_quantity
+      - barcode
+      - created_at
+      - household
+      - id
+      - name
+      - updated_at
+    ProductRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        brand:
+          type: string
+          maxLength: 120
+        barcode:
+          type: string
+          maxLength: 32
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        default_unit:
+          $ref: '#/components/schemas/UnitEnum'
+        image:
+          type: string
+          format: binary
+          nullable: true
+        image_url:
+          description: External image from the barcode provider, if any.
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+      required:
+      - barcode
+      - name
+    ProductSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        brand:
+          type: string
+          maxLength: 120
+        barcode:
+          type: string
+          maxLength: 32
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        default_unit:
+          $ref: '#/components/schemas/UnitEnum'
+        image:
+          type: string
+          format: uri
+          nullable: true
+        image_url:
+          description: External image from the barcode provider, if any.
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 200
+          - type: string
+            maxLength: 0
+      required:
+      - id
+      - name
+    QuantityActionRequest:
+      type: object
+      properties:
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,7}(?:\.\d{0,3})?$
+        note:
+          type: string
+          default: ''
+          maxLength: 500
+        version:
+          type: integer
+      required:
+      - quantity
+    ReasonEnum:
+      enum:
+      - expired
+      - spoiled
+      - damaged
+      - not_needed
+      - other
+      type: string
+      description: |-
+        * `expired` - Expired
+        * `spoiled` - Spoiled
+        * `damaged` - Damaged
+        * `not_needed` - Not needed
+        * `other` - Other
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        preferred_language:
+          $ref: '#/components/schemas/PreferredLanguageEnum'
+        timezone:
+          type: string
+          minLength: 1
+          maxLength: 64
+      required:
+      - email
+      - name
+      - password
+    ShoppingListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product_name:
+          type: string
+          maxLength: 200
+        product:
+          type: integer
+          nullable: true
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,7}(?:\.\d{0,3})?$
+        unit:
+          $ref: '#/components/schemas/UnitEnum'
+        note:
+          type: string
+          maxLength: 300
+        is_purchased:
+          type: boolean
+          readOnly: true
+        purchased_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        added_to_inventory:
+          type: integer
+          readOnly: true
+          nullable: true
+        in_inventory:
+          type: object
+          additionalProperties: {}
+          nullable: true
+          description: 'Show when a similar product is already at home: {"quantity",
+            "unit", "batches"}.'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - added_to_inventory
+      - created_at
+      - id
+      - in_inventory
+      - is_purchased
+      - purchased_at
+      - updated_at
+    ShoppingListItemRequest:
+      type: object
+      properties:
+        product_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        product:
+          type: integer
+          nullable: true
+        quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,7}(?:\.\d{0,3})?$
+        unit:
+          $ref: '#/components/schemas/UnitEnum'
+        note:
+          type: string
+          maxLength: 300
+    SourceEnum:
+      enum:
+      - ocr
+      - barcode
+      - manual
+      type: string
+      description: |-
+        * `ocr` - ocr
+        * `barcode` - barcode
+        * `manual` - manual
+    StorageLocationEnum:
+      enum:
+      - refrigerator
+      - freezer
+      - pantry
+      - other
+      type: string
+      description: |-
+        * `refrigerator` - Refrigerator
+        * `freezer` - Freezer
+        * `pantry` - Pantry
+        * `other` - Other
+    TokenPairResponse:
+      type: object
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+      - access
+      - refresh
+      - user
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    UnitEnum:
+      enum:
+      - pcs
+      - g
+      - kg
+      - ml
+      - l
+      - pack
+      - dozen
+      - bottle
+      - can
+      - oz
+      - lb
+      type: string
+      description: |-
+        * `pcs` - Pieces
+        * `g` - Grams
+        * `kg` - Kilograms
+        * `ml` - Millilitres
+        * `l` - Litres
+        * `pack` - Packs
+        * `dozen` - Dozen
+        * `bottle` - Bottles
+        * `can` - Cans
+        * `oz` - Ounces
+        * `lb` - Pounds
+    UnitSystemEnum:
+      enum:
+      - metric
+      - imperial
+      type: string
+      description: |-
+        * `metric` - Metric
+        * `imperial` - Imperial
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        preferred_language:
+          $ref: '#/components/schemas/PreferredLanguageEnum'
+        timezone:
+          type: string
+          maxLength: 64
+        date_format:
+          $ref: '#/components/schemas/DateFormatEnum'
+        unit_system:
+          $ref: '#/components/schemas/UnitSystemEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - email
+      - id
+      - name
+      - updated_at
+    VersionRequest:
+      type: object
+      properties:
+        version:
+          type: integer
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

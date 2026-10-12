@@ -1,0 +1,36 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+backend/staticfiles/
+backend/media/
+
+# Secrets — never commit
+.env
+*.env.local
+backend/.env
+deploy/.env.prod
+mobile/.env
+mobile/.env.local
+
+# Backups / data
+deploy/backups/*.dump
+
+# Node / Expo
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+mobile/ios/
+mobile/android/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+google-services.json
+GoogleService-Info.plist
+
+# OS
+.DS_Store

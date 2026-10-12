@@ -1,0 +1,9 @@
+# Override for a TEMPORARY HTTP-only deployment on a bare IP (no domain/TLS yet):
+#   docker compose -f docker-compose.prod.yml -f docker-compose.http.yml --env-file deploy/.env.prod up -d --build
+# Requires HTTPS_ENABLED=false in deploy/.env.prod. Remove this override once you have a domain.
+services:
+  nginx:
+    ports: !override
+      - "80:80"
+    volumes:
+      - ./deploy/nginx/http-only:/etc/nginx/templates:ro

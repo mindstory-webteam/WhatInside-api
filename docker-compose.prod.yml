@@ -1,0 +1,90 @@
+# Production stack: Gunicorn API behind Nginx with HTTPS (Let's Encrypt), Celery worker + beat.
+#   cp deploy/.env.prod.example deploy/.env.prod   # fill in secrets
+#   docker compose -f docker-compose.prod.yml --env-file deploy/.env.prod up -d --build
+# See docs/deployment.md for the certificate bootstrap steps.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-whatinside}
+      POSTGRES_USER: ${POSTGRES_USER:-whatinside}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./deploy/backups:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-whatinside}"]
+      interval: 10s
+      retries: 10
+    # Not published to the host: only reachable on the internal network.
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./deploy/.env.prod
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.prod
+      DATABASE_URL: postgres://${POSTGRES_USER:-whatinside}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-whatinside}
+      CELERY_BROKER_URL: redis://redis:6379/0
+    volumes:
+      - static:/app/staticfiles
+      - media:/app/media
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_started }
+
+  worker:
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./deploy/.env.prod
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.prod
+      DATABASE_URL: postgres://${POSTGRES_USER:-whatinside}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-whatinside}
+      CELERY_BROKER_URL: redis://redis:6379/0
+    command: celery -A config worker -l info --concurrency 2
+    depends_on: [api]
+
+  beat:
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./deploy/.env.prod
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.prod
+      DATABASE_URL: postgres://${POSTGRES_USER:-whatinside}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-whatinside}
+      CELERY_BROKER_URL: redis://redis:6379/0
+    command: celery -A config beat -l info --schedule /tmp/celerybeat-schedule
+    depends_on: [api]
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?set API_DOMAIN}
+    volumes:
+      - ./deploy/nginx/templates:/etc/nginx/templates:ro
+      - static:/var/www/static:ro
+      - certbot-www:/var/www/certbot:ro
+      - certbot-conf:/etc/letsencrypt:ro
+    depends_on: [api]
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - certbot-www:/var/www/certbot
+      - certbot-conf:/etc/letsencrypt
+    entrypoint: /bin/sh -c "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done"
+
+volumes:
+  pgdata:
+  static:
+  media:
+  certbot-www:
+  certbot-conf:

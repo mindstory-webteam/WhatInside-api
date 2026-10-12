@@ -1,0 +1,38 @@
+# Rendered by the nginx image's envsubst step (API_DOMAIN comes from the environment).
+upstream whatinside_api { server api:8000; }
+
+server {
+    listen 80;
+    server_name ${API_DOMAIN};
+
+    location /.well-known/acme-challenge/ { root /var/www/certbot; }
+    location / { return 301 https://$host$request_uri; }
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name ${API_DOMAIN};
+
+    ssl_certificate     /etc/letsencrypt/live/${API_DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${API_DOMAIN}/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Content-Type-Options nosniff always;
+    add_header Referrer-Policy same-origin always;
+
+    # Label photos for server-side OCR are capped at 8 MB in Django; allow a little overhead.
+    client_max_body_size 10m;
+
+    location /static/ { alias /var/www/static/; expires 7d; }
+
+    location / {
+        proxy_pass http://whatinside_api;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 60s;
+    }
+}
