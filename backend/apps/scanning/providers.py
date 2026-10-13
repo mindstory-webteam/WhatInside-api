@@ -42,6 +42,41 @@ def load_image(upload) -> Image.Image:
     return ImageOps.exif_transpose(image)
 
 
+def _mean_confidence(pytesseract, img) -> float:
+    """Quality score for a reading: confident real words count, noise doesn't."""
+    data = pytesseract.image_to_data(img, config="--psm 11", output_type=pytesseract.Output.DICT, timeout=15)
+    good = [float(c) for c, w in zip(data["conf"], data["text"])
+            if w.strip() and len(w.strip()) > 1 and float(c) > 0]
+    return sum(c for c in good if c > 60) / 100.0
+
+
+def upright(pytesseract, gray: Image.Image) -> Image.Image:
+    """Rotate a sideways/upside-down label photo so text reads left-to-right.
+
+    Tesseract's orientation detection (OSD) is tried first. If it can't decide
+    (too little text, low confidence), each 90° rotation of a small preview is
+    scored and the best one is used.
+    """
+    try:
+        osd = pytesseract.image_to_osd(gray, config="--psm 0", timeout=15,
+                                       output_type=pytesseract.Output.DICT)
+        if float(osd.get("orientation_conf", 0)) >= 1.5:
+            angle = (360 - int(osd.get("rotate", 0))) % 360  # PIL rotates counter-clockwise
+            return gray.rotate(angle, expand=True) if angle else gray
+    except (pytesseract.TesseractError, RuntimeError, ValueError):
+        pass
+    preview = gray.copy()
+    preview.thumbnail((1000, 1000))
+    scores = {}
+    for angle in (0, 90, 270, 180):
+        try:
+            scores[angle] = _mean_confidence(pytesseract, preview.rotate(angle, expand=True))
+        except (pytesseract.TesseractError, RuntimeError):
+            scores[angle] = 0
+    best = max(scores, key=lambda a: (scores[a], a == 0))
+    return gray.rotate(best, expand=True) if best and scores[best] > scores.get(0, 0) * 1.3 else gray
+
+
 def run_ocr(image: Image.Image) -> str:
     provider = settings.OCR_PROVIDER
     if provider == "disabled":
@@ -52,11 +87,16 @@ def run_ocr(image: Image.Image) -> str:
         except ImportError:  # pragma: no cover
             raise ScanError("ocr_unavailable", "OCR engine is not installed on the server.")
         gray = ImageOps.autocontrast(image.convert("L"))
-        if max(gray.size) < 1200:  # small photos OCR better upscaled
-            scale = 1200 / max(gray.size)
+        longest = max(gray.size)
+        if longest < 1200:  # small photos OCR better upscaled
+            scale = 1200 / longest
             gray = gray.resize((int(gray.width * scale), int(gray.height * scale)))
+        elif longest > 2400:  # huge photos are slow and don't read better
+            gray.thumbnail((2400, 2400))
         try:
-            return pytesseract.image_to_string(gray, config="--psm 6", timeout=20)
+            gray = upright(pytesseract, gray)
+            # psm 4 = "single column of text of variable sizes": best for printed pack labels.
+            return pytesseract.image_to_string(gray, config="--psm 4", timeout=30)
         except (RuntimeError, pytesseract.TesseractError, pytesseract.TesseractNotFoundError) as exc:
             logger.warning("Tesseract failed: %s", exc.__class__.__name__)
             raise ScanError("ocr_failed", "Text could not be read from this image. Try again with better light.")

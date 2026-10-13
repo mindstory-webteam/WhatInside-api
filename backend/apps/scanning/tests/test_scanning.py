@@ -81,10 +81,74 @@ def test_unambiguous_numeric_date_is_high_confidence():
     assert f["value"] == "2026-12-25" and f["confidence"] == "high"
 
 
-def test_month_only_expiry_is_not_guessed():
+def test_month_only_expiry_uses_end_of_month_and_stays_uncertain():
     r = normalize_ocr_text("EXP 06/2026")
-    assert r["fields"]["expiry_date"]["value"] is None
+    f = r["fields"]["expiry_date"]
+    assert f["value"] == "2026-06-30"
+    assert f["confidence"] == "low" and f["uncertain"] is True
+    assert "last day of the month" in f["note"]
     assert r["date_candidates"][0]["precision"] == "month"
+
+
+def test_month_only_mfg_uses_first_day():
+    f = normalize_ocr_text("Mfg. Date: JULY 2025")["fields"]["manufacturing_date"]
+    assert f["value"] == "2025-07-01" and f["uncertain"] is True
+
+
+def test_month_only_unlabelled_is_not_assigned():
+    r = normalize_ocr_text("Toned Milk\nAPR 2027")
+    assert r["fields"]["expiry_date"]["value"] is None
+    assert r["date_candidates"][0]["alternatives"] == ["2027-04-01", "2027-04-30"]
+
+
+def test_label_on_adjacent_line_below_value():
+    # Value box printed above its "Expiry Date :" heading (common on stickers)
+    r = normalize_ocr_text("Mfg. Date: JULY 2025 ACME\n/ APR 2027 19, Some Road\nExpiry Date : Chennai\n"
+                           "Please check expiry date of products before use.")
+    assert r["fields"]["expiry_date"]["value"] == "2027-04-30"
+    assert r["fields"]["manufacturing_date"]["value"] == "2025-07-01"
+    exp = [c for c in r["date_candidates"] if c["label"] == "expiry"][0]
+    assert exp["label_source"] == "adjacent_line"
+
+
+def test_sentence_mentioning_expiry_is_not_a_label():
+    r = normalize_ocr_text("12/12/2027\nPlease check expiry date of products before use")
+    assert r["fields"]["expiry_date"]["value"] is None
+
+
+def test_real_apollo_first_aid_kit_label():
+    """OCR text captured from a real pack photo (rotated, two-column sticker)."""
+    from pathlib import Path
+
+    text = (Path(__file__).parent / "fixtures_apollo_kit.txt").read_text()
+    f = normalize_ocr_text(text)["fields"]
+    assert f["manufacturing_date"]["value"] == "2025-07-01"
+    assert f["expiry_date"]["value"] == "2027-04-30"
+    assert f["expiry_date"]["uncertain"] is True
+    assert f["brand"]["value"] == "Apollo"
+    assert f["quantity"]["value"] == 1 and f["unit"]["value"] == "pack"
+    assert f["batch_number"]["value"] is None  # "Batch No., Mfg, Date" is not a batch number
+    assert f["name"]["value"] is None  # no clear name on this pack — better blank than junk
+
+
+def test_batch_number_requires_digits():
+    assert normalize_ocr_text("For the Batch No., Mfg. Date")["fields"]["batch_number"]["value"] is None
+    assert normalize_ocr_text("Batch No: B1234")["fields"]["batch_number"]["value"] == "B1234"
+    assert normalize_ocr_text("LOT 24A07")["fields"]["batch_number"]["value"] == "24A07"
+
+
+def test_pack_units():
+    f = normalize_ocr_text("Net Qty.: 1 Set")["fields"]
+    assert (f["quantity"]["value"], f["unit"]["value"]) == (1, "pack")
+    f = normalize_ocr_text("Net Qty: 10 Tablets")["fields"]
+    assert (f["quantity"]["value"], f["unit"]["value"]) == (10, "pcs")
+
+
+def test_brand_line_and_brand_only_line():
+    f = normalize_ocr_text("Nestlé\nCurd\nNet Quantity: 400g")["fields"]
+    assert f["brand"]["value"] == "Nestlé" and f["name"]["value"] == "Curd"
+    f = normalize_ocr_text("Fresh Paneer\nMarketed by: Kerala Dairy Co.")["fields"]
+    assert f["brand"]["value"] == "Kerala Dairy"
 
 
 def test_relative_shelf_life_is_only_a_suggestion():
@@ -160,6 +224,26 @@ def test_ocr_upload_rejects_large_files(api):
 def test_ocr_upload_when_disabled(api):
     r = api.post("/api/v1/scanning/ocr/", {"image": _png()}, format="multipart")
     assert r.status_code == 503
+
+
+@pytest.mark.parametrize("angle", [90, 270])
+def test_server_ocr_straightens_sideways_photos(api, angle):
+    pytest.importorskip("pytesseract")
+    import shutil
+
+    if not shutil.which("tesseract"):
+        pytest.skip("tesseract binary not installed")
+    img = Image.new("RGB", (1400, 700), "white")
+    d = ImageDraw.Draw(img)
+    for i, line in enumerate(["FRESH TONED MILK", "Net Qty: 500 ml", "PKD: 01/10/2026", "USE BY: 25/12/2026",
+                              "Store below 4 degrees"]):
+        d.text((40, 40 + i * 120), line, fill="black", font_size=70)
+    buf = io.BytesIO()
+    img.rotate(angle, expand=True).save(buf, format="PNG")
+    up = SimpleUploadedFile("label.png", buf.getvalue(), content_type="image/png")
+    r = api.post("/api/v1/scanning/ocr/", {"image": up}, format="multipart")
+    assert r.status_code == 200
+    assert r.data["fields"]["expiry_date"]["value"] == "2026-12-25", r.data["raw_text"]
 
 
 def test_ocr_upload_server_side(api):
@@ -253,3 +337,42 @@ def test_confirm_without_date_is_flagged(api):
     r = api.post("/api/v1/scanning/confirm/", {"new_product": {"name": "Rice"}, "quantity": 1, "unit": "kg",
                                                "confirmed": True}, format="json")
     assert r.status_code == 201 and r.data["needs_review"] is True
+
+
+def _app_payload(today, **over):
+    """Exactly what the mobile app's toConfirmPayload() sends."""
+    from datetime import timedelta
+
+    p = {"confirmed": True, "source": "manual",
+         "new_product": {"name": "Brown Bread", "brand": "", "barcode": "", "category": "bakery",
+                         "default_unit": "pcs", "image_url": ""},
+         "quantity": "1", "unit": "pcs", "storage_location": "pantry", "purchase_date": today.isoformat(),
+         "manufacturing_date": None, "expiry_date": (today + timedelta(days=4)).isoformat(),
+         "best_before_date": None, "expiry_confirmed": True, "batch_number": "", "purchase_price": None}
+    p.update(over)
+    return p
+
+
+def test_app_manual_add_payload_saves(api, today):
+    r = api.post("/api/v1/scanning/confirm/", _app_payload(today), format="json")
+    assert r.status_code == 201, r.data
+    assert r.data["product"]["name"] == "Brown Bread" and r.data["needs_review"] is False
+    # adding the same product again creates a second batch, not an error
+    r2 = api.post("/api/v1/scanning/confirm/", _app_payload(today, quantity="2"), format="json")
+    assert r2.status_code == 201 and r2.data["product"]["id"] == r.data["product"]["id"]
+
+
+def test_app_ocr_payload_with_month_end_expiry_and_past_mfg_saves(api, today):
+    r = api.post("/api/v1/scanning/confirm/", _app_payload(
+        today, source="ocr", manufacturing_date="2025-07-01", expiry_date="2027-04-30",
+        new_product={"name": "First Aid Kit", "brand": "Apollo", "barcode": "8904355401715", "category": "medicine",
+                     "default_unit": "pack", "image_url": ""}, unit="pack"), format="json")
+    assert r.status_code == 201, r.data
+    assert r.data["expiry_date"] == "2027-04-30"
+
+
+def test_app_unsure_expiry_payload_saves_flagged(api, today):
+    r = api.post("/api/v1/scanning/confirm/", _app_payload(today, expiry_date=None, expiry_confirmed=False),
+                 format="json")
+    assert r.status_code == 201, r.data
+    assert r.data["needs_review"] is True
