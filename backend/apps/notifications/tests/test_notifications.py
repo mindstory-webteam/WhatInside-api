@@ -175,3 +175,12 @@ def test_inventory_service_cancel_on_discard(add_batch, user):
     b = add_batch(days=10)
     inv.discard(batch_id=b["id"], actor=user, reason="spoiled")
     assert pending(b["id"]).count() == 0
+
+
+def test_upcoming_includes_due_but_undispatched_reminders(api, add_batch):
+    """Without a running dispatcher, due reminders must still be visible as scheduled."""
+    b = add_batch(days=0)  # expires today → the "on the day" reminder is already due
+    assert pending(b["id"]).exists()
+    res = api.get("/api/v1/notifications/?upcoming=true")
+    assert res.status_code == 200
+    assert any(r["batch"] == b["id"] for r in res.json()["results"])

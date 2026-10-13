@@ -21,7 +21,8 @@ class NotificationHistoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet)
             return NotificationRecord.objects.none()
         qs = NotificationRecord.objects.filter(user=self.request.user)
         if self.request.query_params.get("upcoming") == "true":
-            return qs.filter(status=DeliveryStatus.PENDING, scheduled_for__gt=timezone.now()).order_by("scheduled_for")
+            # Includes reminders that are due but not dispatched yet, so nothing "disappears".
+            return qs.filter(status=DeliveryStatus.PENDING).order_by("scheduled_for")
         return qs.exclude(status=DeliveryStatus.PENDING).exclude(status=DeliveryStatus.CANCELLED)
 
     @extend_schema(request=None, responses={204: None})
