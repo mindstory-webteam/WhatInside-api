@@ -1,0 +1,86 @@
+{
+  "expo": {
+    "name": "WhatInside",
+    "slug": "whatinside",
+    "scheme": "whatinside",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F4FAF5",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "app.whatinside.mobile",
+      "infoPlist": {
+        "NSCameraUsageDescription": "WhatInside uses the camera to read product labels and barcodes.",
+        "NSPhotoLibraryUsageDescription": "WhatInside lets you choose a photo of a product label to read its dates.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "app.whatinside.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#E8F5EA",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.POST_NOTIFICATIONS"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "@react-native-community/datetimepicker",
+      "expo-localization",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#F4FAF5"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "WhatInside uses the camera to read product labels and barcodes.",
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "WhatInside lets you choose a photo of a product label to read its dates.",
+          "cameraPermission": "WhatInside uses the camera to read product labels."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#1B5E3B",
+          "defaultChannel": "expiry-reminders"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false
+    },
+    "extra": {
+      "eas": {
+        "projectId": "af029bb0-4489-4bb0-ba61-75edb0542c40"
+      }
+    }
+  }
+}

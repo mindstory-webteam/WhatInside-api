@@ -27,12 +27,18 @@ class HouseholdSerializer(serializers.ModelSerializer):
 
 class MemberSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source="user.name", read_only=True)
-    email = serializers.EmailField(source="user.email", read_only=True)
+    email = serializers.EmailField(source="user.email", read_only=True, allow_null=True)
+    phone = serializers.SerializerMethodField()
 
     class Meta:
         model = HouseholdMembership
-        fields = ["id", "user", "name", "email", "role", "status", "joined_at"]
-        read_only_fields = ["id", "user", "name", "email", "status", "joined_at"]
+        fields = ["id", "user", "name", "email", "phone", "role", "status", "joined_at"]
+        read_only_fields = ["id", "user", "name", "email", "phone", "status", "joined_at"]
+
+    def get_phone(self, obj) -> str | None:
+        from apps.accounts.phone import mask_phone
+
+        return mask_phone(obj.user.phone) if obj.user.phone else None
 
 
 class MemberRoleSerializer(serializers.Serializer):

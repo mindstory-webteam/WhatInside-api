@@ -111,6 +111,7 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "auth": env("THROTTLE_AUTH", default="20/min"),
         "password_reset": env("THROTTLE_PASSWORD_RESET", default="5/hour"),
+        "otp": env("THROTTLE_OTP", default="10/hour"),
         "scanning": env("THROTTLE_SCANNING", default="30/min"),
     },
 }
@@ -145,6 +146,25 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="WhatInside <no-reply@whatinside.app>")
 PASSWORD_RESET_URL = env("PASSWORD_RESET_URL", default="whatinside://reset-password")
+
+# --- Mobile-number accounts & SMS one-time codes ---------------------------------
+AUTHENTICATION_BACKENDS = ["apps.accounts.backends.PhoneOrEmailBackend"]
+DEFAULT_PHONE_COUNTRY_CODE = env("DEFAULT_PHONE_COUNTRY_CODE", default="91")
+SMS_BACKEND = env("SMS_BACKEND", default="console")  # console | msg91 | twilio
+OTP_LENGTH = 6
+OTP_TTL_SECONDS = env.int("OTP_TTL_SECONDS", default=600)
+OTP_RESEND_SECONDS = env.int("OTP_RESEND_SECONDS", default=30)
+OTP_MAX_PER_HOUR = env.int("OTP_MAX_PER_HOUR", default=5)
+OTP_MAX_ATTEMPTS = env.int("OTP_MAX_ATTEMPTS", default=5)
+# TESTING ONLY: include the code in the API response (the app shows it) so you can try
+# sign-up before an SMS provider is configured. Never enable with real users.
+OTP_DEBUG_RETURN_CODE = env.bool("OTP_DEBUG_RETURN_CODE", default=False)
+MSG91_AUTH_KEY = env("MSG91_AUTH_KEY", default="")
+MSG91_TEMPLATE_ID = env("MSG91_TEMPLATE_ID", default="")
+MSG91_OTP_VAR = env("MSG91_OTP_VAR", default="otp")
+TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID", default="")
+TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN", default="")
+TWILIO_FROM_NUMBER = env("TWILIO_FROM_NUMBER", default="")
 
 # Celery (only used for scheduled notification dispatch)
 CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://localhost:6379/0")

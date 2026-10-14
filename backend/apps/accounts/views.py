@@ -4,23 +4,42 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from . import services
 from .serializers import (
     ChangePasswordSerializer,
     DeleteAccountSerializer,
-    EmailTokenObtainSerializer,
+    LoginSerializer,
     LogoutSerializer,
+    OtpRequestSerializer,
+    OtpResponseSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
     RegisterSerializer,
     TokenPairResponseSerializer,
     UserSerializer,
+    tokens_for,
 )
 
 
+class OtpRequestView(APIView):
+    """Step 1 of sign-up / password reset: text a 6-digit code to the mobile number."""
+
+    permission_classes = [permissions.AllowAny]
+    throttle_scope = "otp"
+
+    @extend_schema(request=OtpRequestSerializer, responses={202: OtpResponseSerializer})
+    def post(self, request):
+        serializer = OtpRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = services.request_otp(**serializer.validated_data)
+        return Response(data, status=status.HTTP_202_ACCEPTED)
+
+
 class RegisterView(APIView):
+    """Step 2 of sign-up: verify the SMS code and create the account."""
+
     permission_classes = [permissions.AllowAny]
     throttle_scope = "auth"
 
@@ -28,17 +47,19 @@ class RegisterView(APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        refresh = RefreshToken.for_user(user)
-        return Response(
-            {"access": str(refresh.access_token), "refresh": str(refresh), "user": UserSerializer(user).data},
-            status=status.HTTP_201_CREATED,
-        )
+        user = services.register_with_phone(**serializer.validated_data)
+        return Response(tokens_for(user), status=status.HTTP_201_CREATED)
 
 
-class LoginView(TokenObtainPairView):
-    serializer_class = EmailTokenObtainSerializer
+class LoginView(APIView):
+    permission_classes = [permissions.AllowAny]
     throttle_scope = "auth"
+
+    @extend_schema(request=LoginSerializer, responses={200: TokenPairResponseSerializer})
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(tokens_for(serializer.validated_data["user"]))
 
 
 class RefreshView(TokenRefreshView):
@@ -77,6 +98,11 @@ class PasswordResetRequestView(APIView):
     def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        phone = serializer.validated_data.get("phone")
+        if phone:
+            data = services.request_otp(phone, "reset")
+            return Response({**data, "detail": "If this number has an account, we've sent a code."},
+                            status=status.HTTP_202_ACCEPTED)
         services.send_password_reset(serializer.validated_data["email"])
         return Response(
             {"detail": "If an account exists for this email, a reset link has been sent."},
@@ -92,7 +118,11 @@ class PasswordResetConfirmView(APIView):
     def post(self, request):
         serializer = PasswordResetConfirmSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        ok = services.confirm_password_reset(**serializer.validated_data)
+        v = serializer.validated_data
+        if v.get("phone"):
+            services.reset_password_with_otp(phone=v["phone"], otp=v["otp"], new_password=v["new_password"])
+            return Response({"detail": "Password updated. Please sign in again."})
+        ok = services.confirm_password_reset(v["uid"], v["token"], v["new_password"])
         if not ok:
             return Response(
                 {"error": {"code": "invalid_token", "message": "This reset link is invalid or has expired.",

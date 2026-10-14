@@ -14,16 +14,17 @@ from apps.products.models import Product
 def make_user(db):
     counter = {"n": 0}
 
-    def _make(email=None, name="Test User", password="Str0ng-pass!23"):
+    def _make(email=None, name="Test User", password="Str0ng-pass!23", phone=None):
         counter["n"] += 1
-        return User.objects.create_user(email=email or f"user{counter['n']}@example.test", password=password, name=name)
+        return User.objects.create_user(phone=phone or f"+9198765{counter['n']:05d}",
+                                        email=email or f"user{counter['n']}@example.test", password=password, name=name)
 
     return _make
 
 
 @pytest.fixture
 def user(make_user):
-    return make_user(email="anu@example.test", name="Anu")
+    return make_user(email="anu@example.test", name="Anu", phone="+919876543210")
 
 
 @pytest.fixture

@@ -18,7 +18,7 @@ def accept_invitation(*, user, code: str) -> HouseholdMembership:
     invitation = HouseholdInvitation.objects.select_for_update().filter(code=code).first()
     if invitation is None or not invitation.is_usable:
         raise DomainError("This invitation code is invalid or has expired.")
-    if invitation.email and invitation.email.lower() != user.email.lower():
+    if invitation.email and invitation.email.lower() != (user.email or "").lower():
         raise DomainError("This invitation was sent to a different email address.")
     membership, created = HouseholdMembership.objects.get_or_create(
         household=invitation.household, user=user, defaults={"role": invitation.role}
